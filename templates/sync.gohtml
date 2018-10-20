@@ -1,0 +1,29 @@
+{{template "header" .}}
+
+<div class="container">
+
+
+
+    <div class="row">
+
+        <!-- Sync wallets -->
+        <div class="col-6" style="background: #b2dfdb">
+            <header>Send sync token</header>
+            <form method="post">
+                <div class="form-group">
+                    <label for="receiver_id">Enter the receivers id</label>
+                    <input type="text" class="form-control" name="receiver_id" id="receiver_id">
+                </div>
+                <button type="submit" name="receive" class="btn btn-primary">Send sync token</button>
+            </form>
+        </div>
+        <!--Sync wallets-->
+
+        {{if .Success}}<h1>Bad</h1>{{end}}
+    </div>
+
+</div>
+
+
+
+{{template "footer" .}}
