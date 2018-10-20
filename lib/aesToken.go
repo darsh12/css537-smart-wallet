@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"encoding/hex"
 	"fmt"
+	"github.com/pkg/errors"
 	"log"
 )
 
@@ -32,19 +33,19 @@ func DecodeString(data string) []byte {
 }
 
 //Encrypt the plaintext
-func Encrypt(key []byte, plaintext []byte) string {
+func Encrypt(key []byte, plaintext []byte) (cipher string, err error) {
 
 	//Decode the key from a hex to a 32byte
 	//It is assumed that the block size will always be 16bits so padding is not needed
 	if len(plaintext)%aes.BlockSize != 0 {
-		panic("Plaintext not a multiple of block size")
+		return "",errors.New("Input cannot be encrypted")
 	}
 
 	//Create a new cipher block
 	block, err := aes.NewCipher(key)
 
 	if err != nil {
-		log.Fatal(err)
+		return "",err
 	}
 
 	//Create a byte of length 16 bytes
@@ -56,7 +57,7 @@ func Encrypt(key []byte, plaintext []byte) string {
 	//Encode cipher to hex and print
 	//fmt.Printf("%x\n", cipherText)
 
-	return hex.EncodeToString(cipherText)
+	return hex.EncodeToString(cipherText),nil
 }
 
 //Decrypt the ciphertext

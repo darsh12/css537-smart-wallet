@@ -3,7 +3,6 @@
 <div class="container">
 
 
-
     <div class="row">
 
         <!-- Sync wallets -->
@@ -18,8 +17,19 @@
             </form>
         </div>
         <!--Sync wallets-->
-
-        {{if .Success}}<h1>Bad</h1>{{end}}
+    {{if not .Success}}
+        {{range .Message}}
+            {{.}}
+        {{end}}
+    {{else if .Success}}
+        <ul>
+            <li>Sender Wallet ID: {{index .Message 0}}</li>
+            <li>Reciever Wallet ID: {{index .Message 1}}</li>
+            <li>Amount: {{index .Message 2}}</li>
+            <li>Counter: {{index .Message 3}}</li>
+        </ul>
+        <p>Encrypted Token: {{index .Message 4}}</p>
+    {{end}}
     </div>
 
 </div>
