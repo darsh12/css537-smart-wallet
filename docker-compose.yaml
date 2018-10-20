@@ -2,10 +2,14 @@
 version: '3.7'
 
 services:
-  redis:
-    image: redis
-    ports:
-      - "6379:6379"
+  web:
+    image: golang:1.11.1
     volumes:
-      - "./redis:/data"
-    restart: always
+      - .:/app
+    working_dir: /app
+    command: go run main.go
+#  redis:
+#    image: redis:5.0.0
+#    ports:
+#      - "6379:6379"
+#    restart: always
