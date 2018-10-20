@@ -2,6 +2,7 @@ package main
 
 import (
 	"./lib"
+	"fmt"
 	"github.com/gomodule/redigo/redis"
 	"html/template"
 	"log"
@@ -18,6 +19,12 @@ type token struct {
 	ReceiverWalletID string
 	Amount           string
 	Counter          string
+}
+
+type redisValues struct {
+	redisReceiverID          string
+	redisReceiverCounterName string
+	redisReceiverCounter     string
 }
 
 type receiving struct {
@@ -39,9 +46,9 @@ type message struct {
 /*
 REDIS keys
 
-Amount = {Amount} := The Amount of the sender
+amount = {Amount} := The Amount of the sender
 sender_id = 1105 :=the senders id
-reciever_{id} : {id} := the receivers id if exists
+receiver_{id} : {id} := the receivers id if exists
 receiver_counter_{id} := {Counter} := the Counter of the receiver id
 
 */
@@ -51,13 +58,13 @@ func init() {
 }
 
 func main() {
+
 	http.HandleFunc("/", receiveMoney)
 	http.HandleFunc("/send", sendMoney)
 	http.HandleFunc("/sendSync", sendSync)
 
 	http.ListenAndServe(":8080", nil)
 }
-
 
 //Method to create a synchronise token to send
 func sendSync(w http.ResponseWriter, req *http.Request) {
@@ -105,6 +112,45 @@ func sendSync(w http.ResponseWriter, req *http.Request) {
 			tpl.ExecuteTemplate(w, "sync.gohtml", message{false, messages})
 			return
 		}
+
+		/*
+		Start with redis
+		*/
+		conn, err := redis.Dial("tcp", ":6379")
+		defer conn.Close()
+
+		redisVal := redisValues{redisReceiverID: "receiver_" + receiverID, redisReceiverCounterName: "receiver_counter_" + receiverID, redisReceiverCounter: "0000"}
+		//Check if the receiver wallet id exists
+		redisReceiverCheck, err := redis.Int(conn.Do("EXISTS", redisVal.redisReceiverID))
+		if err != nil {
+			messages := []string{"Could not connect to redis to check receiver id"}
+			tpl.ExecuteTemplate(w, "sync.gohtml", message{false, messages})
+			return
+		} else if redisReceiverCheck != 0 {
+			messages := []string{"Wallet id already synchronised"}
+			tpl.ExecuteTemplate(w, "sync.gohtml", message{false, messages})
+			return
+		}
+
+		/*
+		Insert to redis
+		 */
+		if _, err := conn.Do("SET", redisVal.redisReceiverID, receiverID); err != nil {
+			messages := []string{"Error inserting wallet id in redis"}
+			tpl.ExecuteTemplate(w, "sync.gohtml", message{false, messages})
+			return
+		}
+		if _, err := conn.Do("SET", redisVal.redisReceiverCounterName, redisVal.redisReceiverCounter); err != nil {
+			messages := []string{"Error inserting wallet id in redis"}
+			tpl.ExecuteTemplate(w, "sync.gohtml", message{false, messages})
+			return
+		}
+
+		r, _ := redis.Strings(conn.Do("KEYS", "*"))
+		fmt.Println(r)
+		/*
+		End redis
+		 */
 
 		messages := []string{sync.Token.SenderWalletID, sync.Token.ReceiverWalletID, sync.Token.Amount, sync.Token.Counter, sync.encryptedToken}
 		err = tpl.ExecuteTemplate(w, "sync.gohtml", message{true, messages})
