@@ -52,12 +52,12 @@ receiver_counter_{id} := {Counter} := the Counter of the receiver id
 
 */
 func init() {
-	conn,err:=redis.Dial("tcp",":6379")
-	if err!=nil {
+	conn, err := redis.Dial("tcp", ":6379")
+	if err != nil {
 		log.Fatal("Could not connect to redis server")
 	}
-	conn.Do("SET","sender_id","1105")
-	conn.Do("SET","amount","0000")
+	conn.Do("SET", "sender_id", "1105")
+	conn.Do("SET", "amount", "0000")
 	defer conn.Close()
 
 	tpl = template.Must(template.ParseGlob("templates/*"))
