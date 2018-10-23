@@ -3,7 +3,6 @@ package lib
 import (
 	"crypto/aes"
 	"encoding/hex"
-	"fmt"
 	"github.com/pkg/errors"
 	"log"
 )
@@ -38,14 +37,14 @@ func Encrypt(key []byte, plaintext []byte) (cipher string, err error) {
 	//Decode the key from a hex to a 32byte
 	//It is assumed that the block size will always be 16bits so padding is not needed
 	if len(plaintext)%aes.BlockSize != 0 {
-		return "",errors.New("Input cannot be encrypted")
+		return "", errors.New("Input cannot be encrypted")
 	}
 
 	//Create a new cipher block
 	block, err := aes.NewCipher(key)
 
 	if err != nil {
-		return "",err
+		return "", err
 	}
 
 	//Create a byte of length 16 bytes
@@ -57,17 +56,18 @@ func Encrypt(key []byte, plaintext []byte) (cipher string, err error) {
 	//Encode cipher to hex and print
 	//fmt.Printf("%x\n", cipherText)
 
-	return hex.EncodeToString(cipherText),nil
+	return hex.EncodeToString(cipherText), nil
 }
 
 //Decrypt the ciphertext
-func Decrypt(key []byte, cipherText []byte) {
+func Decrypt(key []byte, cipherText []byte) ([]byte, error) {
 
 	//Create a new cipher block
 	block, err := aes.NewCipher(key)
 
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return nil, errors.New("Could not create a cipher block")
 	}
 
 	//Create a byte of length 16 bytes
@@ -77,5 +77,6 @@ func Decrypt(key []byte, cipherText []byte) {
 	block.Decrypt(plainText, cipherText)
 
 	//Print the plaintext in a string format
-	fmt.Printf("%s\n", plainText)
+	//fmt.Printf("%s\n", plainText)
+	return plainText, nil
 }

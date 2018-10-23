@@ -1,0 +1,41 @@
+{{template "header" .}}
+
+<div class="container">
+
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-1 text-center">Sync Wallet</h1>
+            <form method="post">
+                <div class="form-group">
+                    <label for="sync_token">AES Sync Token</label>
+                    <input type="text" class="form-control" name="sync_token" id="sync_token"
+                           placeholder="d739d33eb7df982aabb24372faa7ec23">
+                </div>
+                <button type="submit" class="btn btn-info">Synchronise</button>
+            </form>
+        </div>
+    </div>
+
+
+{{if not .Success}}
+{{range .Message}}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    {{.}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+{{end}}
+{{else if .Success}}
+    <div class="alert alert-success">
+        <dl class="row">
+            <dt class="col-sm-3">Sender ID:</dt>
+            <dd class="col-sm-9">{{index .Message 0}}</dd>
+            <dt class="col-sm-3">Counter:</dt>
+            <dd class="col-sm-9">{{index .Message 1}}</dd>
+
+        </dl>
+    </div>
+{{end}}
+</div>
+{{template "footer" .}}
