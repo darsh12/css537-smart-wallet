@@ -3,26 +3,27 @@
 
 
     <div class="row">
-
-
-        <!--Sending money-->
-        <div class="col-6" style="background: #4fc3f7">
-            <header>Send Money</header>
+        <div class="col-12">
+            <h1 class="display-1 text-center">Send Money</h1>
             <form method="post">
                 <div class="form-group">
-                    <label for="sender_id">Enter the Senders ID</label>
-                    <input type="text" class="form-control" name="sender_id" id="sender_id">
-                </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <label for="receiver_id">Receiver's ID</label>
+                            <input type="text" class="form-control" name="receiver_id" id="receiver_id"
+                                   placeholder="1234">
+                        </div>
+                        <div class="col-6">
+                            <label for="receive_money">Amount to send</label>
+                            <input type="text" class="form-control" name="amount" id="amount"
+                                   placeholder="10">
 
-                <div class="form-group">
-                    <label for="amount">Enter the amount</label>
-                    <input type="number" class="form-control" name="amount" id="amount">
+                        </div>
+                    </div>
                 </div>
-                <button type="submit" name="send" class="btn btn-danger">Send Money</button>
+                <button type="submit" class="btn btn-danger">Send Money</button>
             </form>
         </div>
-        <!--End Send-->
-
     </div>
 
 </div>

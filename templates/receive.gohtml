@@ -1,25 +1,19 @@
 {{template "header" .}}
-
 <div class="container">
 
-
-
     <div class="row">
-
-        <!--Receiving money -->
-        <div class="col-6" style="background: #b2dfdb">
-            <header>Receive Money</header>
+        <div class="col-12">
+            <h1 class="display-1 text-center">Receive Money</h1>
             <form method="post">
                 <div class="form-group">
-                    <label for="token">Enter the receiving code</label>
-                    <input type="text" class="form-control" name="token" id="token">
+                    <label for="receive_money">Input AES Token</label>
+                    <input type="text" class="form-control" name="receive_money" id="receive_money" placeholder="AES Token">
                 </div>
-                <button type="submit" name="receive" class="btn btn-primary">Receive Money</button>
+                <button type="submit" class="btn btn-primary">Receive Money</button>
             </form>
         </div>
-        <!--end receive-->
-
     </div>
+
 
 </div>
 
