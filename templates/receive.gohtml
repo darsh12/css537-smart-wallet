@@ -14,7 +14,32 @@
         </div>
     </div>
 
+{{if not .Success}}
+{{range .Message}}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    {{.}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+{{end}}
+{{else if .Success}}
+    <div class="alert alert-success">
+        <dl class="row">
+            <dt class="col-sm-3">Sender ID:</dt>
+            <dd class="col-sm-9">{{index .Message 0}}</dd>
 
+            <dt class="col-sm-3">Received Amount:</dt>
+            <dd class="col-sm-9">{{index .Message 1}}</dd>
+
+            <dt class="col-sm-3">Received Counter:</dt>
+            <dd class="col-sm-9">{{index .Message 2}}</dd>
+
+            <dt class="col-sm-3">Final Amount:</dt>
+            <dd class="col-sm-9">{{index .Message 3}}</dd>
+        </dl>
+    </div>
+{{end}}
 </div>
 
 {{template "footer" .}}
