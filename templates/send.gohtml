@@ -26,6 +26,52 @@
         </div>
     </div>
 
+{{if not .Success}}
+{{range .Message}}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    {{.}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+{{end}}
+{{else if .Success}}
+    <div class="alert alert-success">
+        <dl class="row">
+            <dt class="col-sm-3">Receiver ID:</dt>
+            <dd class="col-sm-9">{{index .Message 0}}</dd>
+            <dt class="col-sm-3">Reaming Amount:</dt>
+            <dd class="col-sm-9">{{index .Message 1}}</dd>
+            <dt class="col-sm-3">Encrypted Token:</dt>
+            <dd class="col-sm-9">
+                <blockquote class="blockquote">
+                    <h3 id="foo"> {{index .Message 2}}<span><i class="btn material-icons" data-clipboard-target="#foo">file_copy</i></span>
+                    </h3>
+                </blockquote>
+            </dd>
+
+        </dl>
+    </div>
+{{end}}
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
+
+<script>
+    var clipboard = new ClipboardJS('.btn');
+
+    clipboard.on('success', function (e) {
+        console.info('Action:', e.action);
+        console.info('Text:', e.text);
+        console.info('Trigger:', e.trigger);
+
+        e.clearSelection();
+    });
+
+    clipboard.on('error', function (e) {
+        console.error('Action:', e.action);
+        console.error('Trigger:', e.trigger);
+    });
+</script>
 
 {{template "footer" .}}
