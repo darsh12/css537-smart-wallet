@@ -41,7 +41,7 @@ sender_id = 1105 :=the senders id
 
 */
 func init() {
-	conn, err := redis.Dial("tcp", ":6379")
+	conn, err := redis.Dial("tcp", "redis:6379")
 	if err != nil {
 		log.Fatal("Could not connect to redis server")
 	}
@@ -96,7 +96,7 @@ func receiveMoney(w http.ResponseWriter, req *http.Request) {
 		/*
 			Start with redis
 		*/
-		conn, err := redis.Dial("tcp", ":6379")
+		conn, err := redis.Dial("tcp", "redis:6379")
 		defer conn.Close()
 
 		redisReceiverCheck, _ := redis.Int(conn.Do("EXISTS", token.ReceiverWalletID))
@@ -180,7 +180,7 @@ func syncWallet(w http.ResponseWriter, req *http.Request) {
 		/*
 			Start with redis
 		*/
-		conn, err := redis.Dial("tcp", ":6379")
+		conn, err := redis.Dial("tcp", "redis:6379")
 		defer conn.Close()
 
 		redisVal := redisValues{redisReceiverID: wallet.SenderWalletID, redisReceiverCounter: strconv.Itoa(counter)}
@@ -226,7 +226,7 @@ func syncWallet(w http.ResponseWriter, req *http.Request) {
 //Method to create a synchronise token to send
 func sendSync(w http.ResponseWriter, req *http.Request) {
 
-	conn, err := redis.Dial("tcp", ":6379")
+	conn, err := redis.Dial("tcp", "redis:6379")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -307,7 +307,7 @@ func sendMoney(w http.ResponseWriter, req *http.Request) {
 			tpl.ExecuteTemplate(w, "send.gohtml", message{false, messages})
 			return
 		}
-		conn, err := redis.Dial("tcp", ":6379")
+		conn, err := redis.Dial("tcp", "redis:6379")
 		if err != nil {
 			messages := []string{"Could not connect to redis"}
 			tpl.ExecuteTemplate(w, "send.gohtml", message{false, messages})
