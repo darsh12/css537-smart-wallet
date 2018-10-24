@@ -77,6 +77,7 @@ func receiveMoney(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
+		//Decrypt the token
 		key := lib.DecodeString(PrivateKey)
 		decodeToken := lib.DecodeString(token.EncryptedToken)
 		plainText, err := lib.Decrypt(key, decodeToken)
@@ -89,6 +90,7 @@ func receiveMoney(w http.ResponseWriter, req *http.Request) {
 			tpl.ExecuteTemplate(w, "receive.gohtml", message{false, messages})
 		}
 
+		//Parse the token
 		token.SenderWalletID = string(plainText[0:4])
 		token.ReceiverWalletID = string(plainText[4:8])
 		token.Amount = string(plainText[8:12])
@@ -99,16 +101,21 @@ func receiveMoney(w http.ResponseWriter, req *http.Request) {
 		conn, err := redis.Dial("tcp", "redis:6379")
 		defer conn.Close()
 
-		redisReceiverCheck, _ := redis.Int(conn.Do("EXISTS", token.ReceiverWalletID))
+		redisSenderCheck, _ := redis.Int(conn.Do("EXISTS", token.SenderWalletID))
 
-		if redisReceiverCheck != 1 {
-			messages := []string{"Wallet is not synced. Could not receive money"}
+		if redisSenderCheck != 1 {
+
+			messages := []string{"Wallet is not synced. Could not receive money", string(plainText)}
 			tpl.ExecuteTemplate(w, "receive.gohtml", message{false, messages})
 			return
 		}
 
-		redisCounterCheck, _ := redis.String(conn.Do("GET", token.ReceiverWalletID))
-		if token.Counter != redisCounterCheck {
+		redisCounterCheck, _ := redis.String(conn.Do("GET", token.SenderWalletID))
+		//Convert tokens to int for comparison
+		intReceivedCounter, _ := strconv.Atoi(token.Counter)
+		intRedisCounter, _ := strconv.Atoi(redisCounterCheck)
+
+		if intReceivedCounter != intRedisCounter {
 			messages := []string{"Wallet is out of sync", "Current counter: " + redisCounterCheck + " Received counter: " + token.Counter}
 			tpl.ExecuteTemplate(w, "receive.gohtml", message{false, messages})
 			return
@@ -144,6 +151,7 @@ func syncWallet(w http.ResponseWriter, req *http.Request) {
 		req.ParseForm()
 
 		wallet := new(token)
+		//Get data from form
 		wallet.EncryptedToken = strings.TrimSpace(req.PostFormValue("sync_token"))
 
 		if len(wallet.EncryptedToken) != 32 {
@@ -152,6 +160,7 @@ func syncWallet(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
+		//Decrypt token
 		key := lib.DecodeString(PrivateKey)
 		decodeToken := lib.DecodeString(wallet.EncryptedToken)
 		plainText, err := lib.Decrypt(key, decodeToken)
@@ -164,6 +173,7 @@ func syncWallet(w http.ResponseWriter, req *http.Request) {
 			tpl.ExecuteTemplate(w, "receive_sync.gohtml", message{false, messages})
 		}
 
+		//Parse token
 		wallet.SenderWalletID = string(plainText[0:4])
 		wallet.ReceiverWalletID = string(plainText[4:8])
 		wallet.Amount = string(plainText[8:12])
@@ -191,8 +201,9 @@ func syncWallet(w http.ResponseWriter, req *http.Request) {
 			tpl.ExecuteTemplate(w, "receive_sync.gohtml", message{false, messages})
 			return
 		} else if redisReceiverCheck != 0 {
-			messages := []string{"Wallet id already synchronised"}
-			tpl.ExecuteTemplate(w, "receive_sync.gohtml", message{false, messages})
+			str, _ := redis.Strings(conn.Do("KEYS", "*"))
+			//messages := []string{"Wallet id already synchronised"}
+			tpl.ExecuteTemplate(w, "receive_sync.gohtml", message{false, str})
 			return
 		}
 
@@ -289,6 +300,7 @@ func sendMoney(w http.ResponseWriter, req *http.Request) {
 
 	if req.Method == http.MethodPost {
 		req.ParseForm()
+		//Parse value from form
 		receiverID := strings.TrimSpace(req.PostFormValue("receiver_id"))
 		amount := strings.TrimSpace(req.PostFormValue("amount"))
 
