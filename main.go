@@ -135,7 +135,7 @@ func receiveEmd(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		messages := []string{strconv.Itoa(totalAmount)}
+		messages := []string{strconv.Itoa(int(emdAmount)), strconv.Itoa(totalAmount)}
 		tpl.ExecuteTemplate(w, "emd.gohtml", message{true, messages})
 
 	} else {
@@ -405,6 +405,8 @@ func sendMoney(w http.ResponseWriter, req *http.Request) {
 		}
 
 		receiverIDCheck, err := redis.Int(conn.Do("EXISTS", receiverID))
+
+		log.Println(receiverIDCheck)
 
 		if receiverIDCheck != 1 {
 			messages := []string{"Wallet ID not found. Please sync first"}
