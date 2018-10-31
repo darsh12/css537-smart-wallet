@@ -1,0 +1,47 @@
+{{template "header" .}}
+<div class="container">
+
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-1 text-center">EMD</h1>
+            <form method="post">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="token">Token</label>
+                            <input type="text" class="form-control" name="token" id="token"
+                                   placeholder="A123FE16D5DDDD584107749487E2F78">
+                        </div>
+                        <div class="col-12">
+                            <label for="signature">Signature</label>
+                            <input type="text" class="form-control" name="signature" id="signature"
+                                   placeholder="SDF3405F8F56B5DBFEE04D810BF47940A0B32EC776D55D5EF2DC6B634B4939B6237C99A18CE75E773324718889059B18592704660D3B595BD9C6FB74B00C59943FDE6F574C6ACEDFA17D557CDE24KGFHAECE8E2BA66DF9054ED435993464FED1A8F555FKLGFCAD63E971A85D21F6EF048BFE10F9D544C821AB4AE25CA53345CE">
+
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">Get Money</button>
+            </form>
+        </div>
+    </div>
+{{if not .Success}}
+{{range .Message}}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    {{.}}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+{{end}}
+{{else if .Success}}
+    <div class="alert alert-success">
+        <dl class="row">
+            <dt class="col-sm-12">Amount Successfully Added</dt>
+            <dt class="col-sm-3">Total Amount:</dt>
+            <dd class="col-sm-9">${{index .Message 0}}</dd>
+
+        </dl>
+    </div>
+{{end}}
+</div>
+{{template "footer" .}}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"./lib"
+	"encoding/hex"
 	"github.com/gomodule/redigo/redis"
 	"html/template"
 	"log"
@@ -47,7 +48,7 @@ func init() {
 	}
 	//conn.Do("FLUSHALL")
 	conn.Do("SET", "sender_id", "1105")
-	conn.Do("SET", "amount", "10")
+	conn.Do("SET", "amount", "0")
 	defer conn.Close()
 
 	tpl = template.Must(template.ParseGlob("templates/*"))
@@ -59,11 +60,88 @@ func main() {
 	http.HandleFunc("/send", sendMoney)
 	http.HandleFunc("/generateSync", sendSync)
 	http.HandleFunc("/receiveSync", syncWallet)
+	http.HandleFunc("/emd", receiveEmd)
 
 	http.ListenAndServe(":8080", nil)
 
 }
 
+func receiveEmd(w http.ResponseWriter, req *http.Request) {
+	if req.Method == http.MethodPost {
+		req.ParseForm()
+		token := strings.TrimSpace(req.PostFormValue("token"))
+		signature := strings.TrimSpace(req.PostFormValue("signature"))
+
+		if len(token) != 32 {
+			messages := []string{"Please check token. It should be 32 characters"}
+			tpl.ExecuteTemplate(w, "emd.gohtml", message{false, messages})
+			return
+		} else if len(signature) != 256 {
+			messages := []string{"Please check signature. It should be 256 characters"}
+			tpl.ExecuteTemplate(w, "emd.gohtml", message{false, messages})
+			return
+		}
+
+		_, err := lib.VerifySignature(token, signature)
+		if err != nil {
+			messages := []string{"Could not verify signature. Funds not added"}
+			tpl.ExecuteTemplate(w, "emd.gohtml", message{false, messages})
+			return
+		}
+
+		//If verification is successful
+
+		key := lib.DecodeString(PrivateKey)
+		decodeToken := lib.DecodeString(token)
+		plainText, err := lib.Decrypt(key, decodeToken)
+
+		if err != nil {
+			messages := []string{"Could not create a cipher block"}
+			tpl.ExecuteTemplate(w, "emd.gohtml", message{false, messages})
+			return
+		}
+
+		emdAmount, err := strconv.ParseInt(hex.EncodeToString(plainText), 16, 32)
+		if err != nil {
+			messages := []string{"Could not convert amount"}
+			tpl.ExecuteTemplate(w, "emd.gohtml", message{false, messages})
+			return
+		}
+		/*
+			Start redis connection
+		*/
+		conn, err := redis.Dial("tcp", "redis:6379")
+		defer conn.Close()
+
+		redisAmount, err := redis.String(conn.Do("GET", "amount"))
+		if err != nil {
+			messsages := []string{"Could not connect to redis to get amount"}
+			tpl.ExecuteTemplate(w, "emd.gohtml", message{false, messsages})
+			return
+		}
+
+		convertRedisAmount, err := strconv.Atoi(redisAmount)
+		if err != nil {
+			messsages := []string{"Could not convert amount"}
+			tpl.ExecuteTemplate(w, "emd.gohtml", message{false, messsages})
+			return
+		}
+
+		totalAmount := int(emdAmount) + convertRedisAmount
+		//Insert to redis
+		if _, err := conn.Do("SET", "amount", totalAmount); err != nil {
+			messages := []string{"Error updating amount in redis"}
+			tpl.ExecuteTemplate(w, "emd.gohtml", message{false, messages})
+			return
+		}
+
+		messages := []string{strconv.Itoa(totalAmount)}
+		tpl.ExecuteTemplate(w, "emd.gohtml", message{true, messages})
+
+	} else {
+		tpl.ExecuteTemplate(w, "emd.gohtml", nil)
+	}
+}
 func receiveMoney(w http.ResponseWriter, req *http.Request) {
 
 	if req.Method == http.MethodPost {
