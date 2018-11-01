@@ -14,7 +14,8 @@ The receiver on the other hand confirms that the counter received and the counte
 
 To run the program 
 =============
-1. Make sure docker-compose is installed
+1. Make sure docker-compose is installed.
 2. Run `docker-compose up` from the directory to initialise the program.
-3. Navigate to `localhost:8080` to view the program
-+ Note: If port `8080` is not available you can change it in the docker-compose file
+3. Navigate to `localhost:8080` to view the program.
++ Note: If port `8080` is not available you can change it in the docker-compose file.
++ Since it is using redis, in order to purge the data and start from scratch you should run `docker-compose down`and then re-run `docker-compose up`.
